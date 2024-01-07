@@ -1,46 +1,51 @@
-#ifndef __maze_H_
-#define __maze_H_
+#ifndef MAZE_H
+#define MAZE_H
 
 /**
- * @fn struct player
- * @author Alaïa
- * @brief structure for a player
+ * @file maze.h
+ * @brief Header file defining structures and functions for a maze.
  */
-typedef struct player{
+
+/**
+ * @struct Player
+ * @brief Structure representing a player.
+ */
+typedef struct Player {
     char* name;
     int character;
     int hp;
-}player;
+} Player;
 
 /**
- * @fn struct square
- * @author Alaïa
- * @brief structure for a square
+ * @struct Square
+ * @brief Structure representing a square in the maze.
  */
-typedef struct square{
+typedef struct Square {
     int value;
-    struct square* sLeft;
-    struct square* sRight;
-    struct square* sUp;
-    struct square* sDown;
-}square;
-
-typedef struct square* Maze;
-
-typedef struct {
-    square* beginning;
-}square;
+    struct Square* sLeft;
+    struct Square* sRight;
+    struct Square* sUp;
+    struct Square* sDown;
+} Square;
 
 /**
- * @fn Maze createMaze(int value,Maze sLeft,Maze sRight,Maze sUp,Maze sDown)
- * @author Zoé
- * @brief create the maze
- * @param value the value of the node
- * @param sLeft the left son
- * @param sRight the right son
- * @param sUp the son above
- * @param sDown the bottom son
+ * @typedef Maze
+ * @brief Typedefinition for a pointer to Square, representing a Maze.
  */
-Maze createMaze(int value); //,Maze sLeft,Maze sRight,Maze sUp,Maze sDown);
+typedef struct Square* Maze;
 
-#endif
+/**
+ * @fn Maze createMaze(int value);
+ * @brief Create a maze node with the given value.
+ * @param value The value of the node.
+ * @return A pointer to the newly created maze node.
+ */
+Maze createMaze(int value);
+
+/**
+ * @fn void emptyBuffer(void);
+ * @brief Empty the buffer by consuming any remaining characters.
+ */
+void emptyBuffer(void);
+
+#endif // MAZE_H

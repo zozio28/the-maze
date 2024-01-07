@@ -3,151 +3,191 @@
 #include "maze.h"
 #include <unistd.h>
 #include <termios.h>
+#include <string.h>
+
 #define N 1000
 
-//create the maze
-Maze createMaze(int value/*,Maze sLeft,Maze sRight,Maze sUp,Maze sDown*/){
-    Maze new = malloc(sizeof(square));
+// Global variables
+int playerRow, playerCol;
+int maze[N][N];
 
+// Function prototypes
+Maze createMaze(int value);
+int readCSV(char* fileMaze);
+void emptyBuffer(void);
+void printMaze(void);
+int differentMove(void);
+
+// createMaze function
+Maze createMaze(int value) {
+    Maze new = malloc(sizeof(Square));
     new->value = value;
-    new->sLeft = NULL /*sLeft*/;
-    new->sRight = NULL /*sRight*/;
-    new->sUp = NULL /*sUp*/;
-    new->sDown = NULL /*sDown*/;
+    new->sLeft = NULL;
+    new->sRight = NULL;
+    new->sUp = NULL;
+    new->sDown = NULL;
     return new;
 }
-
-// Maze insertionArbre(int value, Maze m){
-//     if(m == NULL){
-//         return m = creerArbreBinaire(value,NULL,NULL);
-//     }else if(value < m->value){
-//         m->sLeft = insertionArbre(value,m->sLeft);
-//     }else{
-//         m->sRight = insertionArbre(value,m->sRight);
-//     }else{
-//         m->sDown = insertionArbre(value,m->sDown);
-//     }else{
-//         m->sUp = insertionArbre(value,m->sUp);
-//     }
-//     return m;
-// }
-
-int readCSV(char* fileMaze){
+// readCSV function
+int readCSV(char* fileMaze) {
     char line[N];
-    int row = 0;
+    int row = 0, col = 0;
 
-    FILE* maze = NULL;
-    maze = fopen(fileMaze, "r");
-    Maze medium;
+    FILE* mazeFile = fopen(fileMaze, "r");
+    Maze medium = NULL;
 
-    if(maze != NULL){
-        while (fgets(line, N, maze) != NULL) {
+    if (mazeFile != NULL) {
+        while (fgets(line, N, mazeFile) != NULL) {
             char* token = strtok(line, ";");
             while (token != NULL) {
                 int value = atoi(token);
-                Maze* new = createMaze(value);
+                Maze new = createMaze(value);
 
                 if (row > 0) {
-                    Maze* upper = maze->beginning;
+                    Maze upper = medium;
                     for (int i = 0; i < row - 1; i++) {
                         upper = upper->sDown;
+                    }
+                    if (upper != NULL) {
+                        new->sUp = upper->sRight;
+                        upper->sRight = new;
+                    }
                 }
-                if (upper != NULL) {
-                    new->sUp = upper->sRight;
-                    upper->sRight = new;
+
+                if (col > 0) {
+                    Maze leftNode = medium;
+                    for (int i = 0; i < col - 1; i++) {
+                        leftNode = leftNode->sRight;
+                    }
+                    leftNode->sLeft = new;
                 }
+
+                if (row == 0 && col == 0) {
+                    medium = new;
+                }
+
+                token = strtok(NULL, ";");
+                col++;
             }
 
-            if (col > 0) {
-                Node* leftNode = newNode;
-                for (int i = 0; i < col - 1; i++) {
-                    leftNode = leftNode->right;
-                }
-                leftNode->left = newNode;
-            }
-
-            if (row == 0 && col == 0) {
-                maze->root = newNode;
-            }
-
-            token = strtok(NULL, ";");
-            col++;
+            row++;
+            col = 0;
         }
 
-        row++;
-    }
-
-    fclose(file);
-    return 1;
-}
-            }    
-        }
-    }else{
-        printf("Le fichier %s n'existe pas.\n",fileMaze);
+        fclose(mazeFile);
+        return 1;
+    } else {
+        printf("Le fichier %s n'existe pas.\n", fileMaze);
         return 0;
     }
-    return;
-    fclose(maze);
 }
 
-void emptyBuffer() {
-  char c;
-  while (((c = getchar()) != '\n') && (c != EOF));
+// printMaze function
+void printMaze(void) {
+    // Implement the logic to print the maze
+    // You may use the global 'maze' array to access the maze data
 }
 
-int differentMove(){
+// emptyBuffer function
+void emptyBuffer(void) {
+    char c;
+    while (((c = getchar()) != '\n') && (c != EOF));
+}
+
+// differentMove function
+int differentMove(void) {
     struct termios tty_opts_backup, tty_opts_raw;
     char c;
-    int pastermine=1;//par défaut on le met à vrai
+    int pastermine = 1;
 
-    /* on est obligé d'appuyer sur la touche entrée */
-    c =getchar();
-    printf("on est obligé d'appuyer sur entrée : vous avez écrit %d \n", c);
-
-    /* ON VIDE LE BUFFER*/
-    emptyBuffer();
+    // Get the current position of the player
+    int row = playerRow;
+    int col = playerCol;
 
     // Back up current TTY settings
     tcgetattr(STDIN_FILENO, &tty_opts_backup);
-
 
     // Change TTY settings mode
     cfmakeraw(&tty_opts_raw);
     tcsetattr(STDIN_FILENO, TCSANOW, &tty_opts_raw);
 
-    while (pastermine){
-        // ZQSD
-        c =getchar();
-        switch(c){
-            case 122: //haut
+    // Prompt the user to enter a move
+    printf("Enter a letter to move (z: top, q: left, d: right, s: bottom, x: quit): ");
+    while (pastermine) {
+        // Read the user's input
+        c = getchar();
 
-                printf("vous avez écrit %d => %c haut !",c,c);
+        // Validate the user's input
+        if (c != 'z' && c != 'q' && c != 'd' && c != 's' && c != 'x') {
+            printf("Invalid move. Please enter a valid move.\n");
+            continue;
+        }
 
+        // Move the player based on the user's input
+        switch (c) {
+            case 'z': // top
+                if (row > 0) {
+                    row--;
+                }
                 break;
-            case 113: //gauche
-                printf("vous avez écrit %d => %c gauche !",c,c);
+            case 'q': // left
+                if (col > 0) {
+                    col--;
+                }
                 break;
-            case 100: //droite
-                printf("vous avez écrit %d => %c droite !",c,c);
+            case 'd': // right
+                if (col < N - 1) {
+                    col++;
+                }
                 break;
-            case 115: //bas
-                printf("vous avez écrit %d => %c bas !",c,c);
+            case 's': // bottom
+                if (row < N - 1) {
+                    row++;
+                }
                 break;
-            case 97:
-                printf("vous avez tapé la lettre %c pour quitter le programme!",c);
-                pastermine=0;
+            case 'x': // quit
+                pastermine = 0;
                 break;
-            default:
-                printf("touche clavier %d => %c NON prise en compte ",c,c);
         }
     }
 
+    // Update the global playerRow and playerCol variables
+    playerRow = row;
+    playerCol = col;
 
-    /* NE PAS OUBLIER : sinon on ne peut plus écrire dans le terminal */
-    // Restore previous TTY settings
+    // Restore the original TTY settings
     tcsetattr(STDIN_FILENO, TCSANOW, &tty_opts_backup);
 
     printf("\n");
+
+    return 0;
+}
+
+int main() {
+    // Example usage
+    char mazeFile[] = "your_maze_file.csv";
+    if (readCSV(mazeFile)) {
+        // Set initial player position (assuming it's valid)
+        playerRow = 0;
+        playerCol = 0;
+
+        // Game loop
+        while (1) {
+            // Print the current state of the maze
+            printMaze();
+
+            // Get user input and move the player
+            differentMove();
+
+            // Check game-over conditions, e.g., exit the loop if needed
+            // Add your logic here
+
+            // Optional: Add a delay or clear screen to make it visually appealing
+            // Example:
+            // usleep(50000); // 50 milliseconds
+            // system("clear"); // For Unix-like systems
+        }
+    }
 
     return 0;
 }
