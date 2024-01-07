@@ -2,3 +2,5 @@
 exe
 .vscode
 latex
+main.o
+maze.o
